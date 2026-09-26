@@ -239,16 +239,16 @@ export function CommandDashboard({
     : devices;
 
   return (
-    <div className="flex min-h-screen bg-stone-50 font-sans text-slate-900 antialiased">
-      {/* 1. Left Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-stone-50 font-sans text-slate-900 antialiased">
+      {/* 1. Fixed Left Sidebar */}
       <Sidebar
         activeNav={activeNav}
         onNavChange={setActiveNav}
         unreadCount={unreadCount}
       />
 
-      {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* 2. Scrollable Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <Header
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -256,6 +256,9 @@ export function CommandDashboard({
           onOpenBroadcast={() => setIsBroadcastOpen(true)}
           onOpenNotifications={() => setIsNotificationOpen(true)}
           onTriggerSimulation={handleTriggerSimulation}
+          onSelectMessage={(msg) => setSelectedMessage(msg)}
+          onSelectDevice={(dev) => setSelectedDevice(dev)}
+          onNavigateTab={(tab) => setActiveNav(tab)}
         />
 
         {/* Emergency Alert Banner for Unresolved P1 calls */}

@@ -19,7 +19,7 @@ export function Sidebar({ activeNav, onNavChange, unreadCount }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-stone-200 flex flex-col justify-between shrink-0 select-none min-h-screen">
+    <aside className="w-64 bg-white border-r border-stone-200 flex flex-col justify-between shrink-0 select-none h-screen sticky top-0 z-30 overflow-y-auto">
       {/* Top Section */}
       <div>
         {/* Logo matching UI.png */}
