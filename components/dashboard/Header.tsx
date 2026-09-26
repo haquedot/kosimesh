@@ -1,16 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Bell, ChevronDown, Radio } from 'lucide-react';
+import { AdminDropdown } from './AdminDropdown';
 
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   unreadCount: number;
   onOpenBroadcast?: () => void;
+  onOpenNotifications?: () => void;
+  onTriggerSimulation?: () => void;
 }
 
-export function Header({ searchQuery, onSearchChange, unreadCount, onOpenBroadcast }: HeaderProps) {
+export function Header({
+  searchQuery,
+  onSearchChange,
+  unreadCount,
+  onOpenBroadcast,
+  onOpenNotifications,
+  onTriggerSimulation,
+}: HeaderProps) {
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
+
   return (
     <header className="h-16 bg-white border-b border-stone-200 px-6 flex items-center justify-between gap-4 sticky top-0 z-40">
       {/* Search Input matching UI.png */}
@@ -38,8 +50,9 @@ export function Header({ searchQuery, onSearchChange, unreadCount, onOpenBroadca
           </button>
         )}
 
-        {/* Notification Bell with Badge 12 matching UI.png */}
+        {/* Notification Bell with Badge */}
         <button
+          onClick={onOpenNotifications}
           title="Notifications"
           className="relative w-9 h-9 rounded-xl hover:bg-stone-100 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
         >
@@ -51,15 +64,26 @@ export function Header({ searchQuery, onSearchChange, unreadCount, onOpenBroadca
           )}
         </button>
 
-        {/* User Pill */}
-        <div className="flex items-center gap-2.5 pl-3 border-l border-stone-200 cursor-pointer group">
-          <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold shadow-xs">
-            A
+        {/* User Pill with Admin Dropdown */}
+        <div className="relative">
+          <div
+            onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+            className="flex items-center gap-2.5 pl-3 border-l border-stone-200 cursor-pointer group select-none"
+          >
+            <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-bold shadow-xs">
+              A
+            </div>
+            <div className="text-xs font-semibold text-slate-800 hidden sm:block">
+              Admin
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
           </div>
-          <div className="text-xs font-semibold text-slate-800 hidden sm:block">
-            Admin
-          </div>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" />
+
+          <AdminDropdown
+            isOpen={isAdminDropdownOpen}
+            onClose={() => setIsAdminDropdownOpen(false)}
+            onTriggerSimulation={onTriggerSimulation}
+          />
         </div>
       </div>
     </header>

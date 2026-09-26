@@ -13,7 +13,7 @@ interface BroadcastModalProps {
 export function BroadcastModal({ isOpen, onClose, onBroadcast }: BroadcastModalProps) {
   const [broadcastText, setBroadcastText] = useState('');
   const [severity, setSeverity] = useState<PriorityLevel>('P1');
-  const [locationName, setLocationName] = useState('All Kosi Flood Sectors');
+  const [locationName, setLocationName] = useState('All Operational Sectors');
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   if (!isOpen) return null;
@@ -64,7 +64,7 @@ export function BroadcastModal({ isOpen, onClose, onBroadcast }: BroadcastModalP
               type="text"
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
-              placeholder="e.g. Supaul East & Saharsa Embankments"
+              placeholder="e.g. Sector Alpha & North Embankment Zone"
               className="w-full text-xs rounded-xl border border-stone-200 p-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
             />
           </div>

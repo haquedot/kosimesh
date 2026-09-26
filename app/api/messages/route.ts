@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       messageType = 'SOS',
       latitude,
       longitude,
-      locationName = 'Supaul Sector',
+      locationName = 'Sector Alpha',
       severity: initialSeverity,
       severityReason: initialReason,
       geminiAnalysis: initialAnalysis,

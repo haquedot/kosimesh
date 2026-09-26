@@ -6,23 +6,35 @@ import { SystemMetrics } from '@/types/schema';
 
 interface KPICardsProps {
   metrics: SystemMetrics;
-  onFilterSeverity?: (severity: string) => void;
+  onClickTotalMessages?: () => void;
+  onClickCriticalP1?: () => void;
+  onClickActiveResponders?: () => void;
+  onClickConnectedDevices?: () => void;
 }
 
-export function KPICards({ metrics }: KPICardsProps) {
+export function KPICards({
+  metrics,
+  onClickTotalMessages,
+  onClickCriticalP1,
+  onClickActiveResponders,
+  onClickConnectedDevices,
+}: KPICardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {/* 1. Total Messages */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:shadow-sm transition-shadow cursor-pointer">
+      <div 
+        onClick={onClickTotalMessages}
+        className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer group"
+      >
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center group-hover:scale-105 transition-transform">
             <MessageSquare className="w-5 h-5 fill-orange-500/20" />
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-900 leading-tight">
               {metrics.totalMessages}
             </div>
-            <div className="text-xs text-slate-500 font-medium">Total Messages</div>
+            <div className="text-xs text-slate-500 font-medium group-hover:text-slate-700">Total Messages</div>
           </div>
         </div>
         <div className="flex items-center text-[11px] font-semibold text-emerald-600 self-start mt-0.5">
@@ -32,16 +44,19 @@ export function KPICards({ metrics }: KPICardsProps) {
       </div>
 
       {/* 2. Critical (P1) */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:shadow-sm transition-shadow cursor-pointer">
+      <div 
+        onClick={onClickCriticalP1}
+        className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:border-red-300 hover:shadow-sm transition-all cursor-pointer group"
+      >
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-red-100/70 text-red-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-xl bg-red-100/70 text-red-600 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Bell className="w-5 h-5 fill-red-500/20" />
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-900 leading-tight">
               {metrics.criticalP1Count}
             </div>
-            <div className="text-xs text-slate-500 font-medium">Critical (P1)</div>
+            <div className="text-xs text-slate-500 font-medium group-hover:text-slate-700">Critical (P1)</div>
           </div>
         </div>
         <div className="flex items-center text-[11px] font-semibold text-red-600 self-start mt-0.5">
@@ -51,16 +66,19 @@ export function KPICards({ metrics }: KPICardsProps) {
       </div>
 
       {/* 3. Active Responders */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:shadow-sm transition-shadow cursor-pointer">
+      <div 
+        onClick={onClickActiveResponders}
+        className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer group"
+      >
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-xl bg-orange-100/70 text-orange-600 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Users className="w-5 h-5 fill-orange-500/20" />
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-900 leading-tight">
               {metrics.activeResponders}
             </div>
-            <div className="text-xs text-slate-500 font-medium">Active Responders</div>
+            <div className="text-xs text-slate-500 font-medium group-hover:text-slate-700">Active Responders</div>
           </div>
         </div>
         <div className="flex items-center text-[11px] font-semibold text-emerald-600 self-start mt-0.5">
@@ -70,16 +88,19 @@ export function KPICards({ metrics }: KPICardsProps) {
       </div>
 
       {/* 4. Connected Devices */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:shadow-sm transition-shadow cursor-pointer">
+      <div 
+        onClick={onClickConnectedDevices}
+        className="bg-white rounded-2xl border border-stone-200 shadow-xs p-4 flex items-center justify-between hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer group"
+      >
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-blue-100/70 text-blue-600 flex items-center justify-center">
+          <div className="w-11 h-11 rounded-xl bg-blue-100/70 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Smartphone className="w-5 h-5 fill-blue-500/20" />
           </div>
           <div>
             <div className="text-2xl font-bold text-slate-900 leading-tight">
               {metrics.connectedDevices}
             </div>
-            <div className="text-xs text-slate-500 font-medium">Connected Devices</div>
+            <div className="text-xs text-slate-500 font-medium group-hover:text-slate-700">Connected Devices</div>
           </div>
         </div>
         <div className="flex items-center text-[11px] font-semibold text-emerald-600 self-start mt-0.5">

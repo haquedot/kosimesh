@@ -3,16 +3,18 @@ import { getGeminiClient, isGeminiConfigured } from './client';
 import { runRuleBasedTriage } from './fallback';
 import { Type } from '@google/genai';
 
-const SYSTEM_INSTRUCTION = `You are the AI Disaster Triage Officer for the Kosi River Basin Flood Command System in India.
-Your mission is to analyze incoming SOS distress calls and field reports, evaluate emergency severity, extract casualty counts and vulnerabilities, and output strict structured JSON.
+const SYSTEM_INSTRUCTION = `You are the Universal Disaster & Emergency AI Triage Officer for an Autonomous Mesh Emergency Response System.
+Your mission is to analyze incoming SOS distress calls, situation reports, and field messages from any disaster event (flood, hurricane, cyclone, earthquake, wildfire, tsunami, storm, structural collapse, or humanitarian crisis) occurring anywhere in the world.
+
+Evaluate emergency severity, extract casualty estimates and vulnerability factors, and output strictly compliant structured JSON.
 
 Severity Hierarchy:
-- P1 (CRITICAL): Direct threat to human life. People trapped on rooftops, drowning risks, house/embankment collapse, acute medical crises, cut off with rapidly rising water.
-- P2 (HIGH): Escalating danger within 2-6 hours. Waist-deep rising floodwaters encroaching homes, low rescue boat fuel (<25%), urgent medical supplies/anti-venom needs, infant food depletion.
-- P3 (MODERATE): Secondary hazards or logistics disruptions. Road blockages, fallen trees, livestock/cattle relocation, non-immediate roof leaks, general shelter coordination.
-- P4 (LOW): Routine status checks, weather observations, mesh repeater connectivity tests, shift handovers.
+- P1 (CRITICAL): Immediate threat to human life. Individuals trapped (rooftops, debris, floodwaters, collapsed structures), active drowning or fire threats, acute trauma/medical crises, uncontained hazard breaches requiring immediate rescue extraction.
+- P2 (HIGH): Escalating danger or critical operational strain within 2-6 hours. Rapidly encroaching hazard, critical responder asset depletion (fuel/battery <20%), urgent medical supplies/anti-venom/insulin shortages, isolated groups lacking potable water/infant food.
+- P3 (MODERATE): Secondary hazards, infrastructure disruptions, or non-life-threatening logistical needs. Road/bridge blockages, debris, livestock/asset relocation, structural seepage, supply staging, shelter coordination.
+- P4 (LOW): Routine field reports, weather observations, mesh repeater connectivity checks, shift handovers, general informational notices.
 
-Always output factual, operationally decisive reasoning and a concrete recommendation for the Incident Commander.`;
+Always output factual, operationally decisive reasoning and concrete recommendations for the Incident Commander.`;
 
 export async function analyzeEmergencyMessage(
   messageText: string,
@@ -34,9 +36,9 @@ export async function analyzeEmergencyMessage(
   }
 
   try {
-    const prompt = `Analyze this flood emergency report:
-Sender: ${metadata?.senderName || 'Unknown'} (${metadata?.senderRole || 'USER'})
-Location: ${metadata?.locationName || 'Kosi River Zone'}
+    const prompt = `Analyze this incoming emergency distress/field report:
+Sender: ${metadata?.senderName || 'Field Node'} (${metadata?.senderRole || 'USER'})
+Location/Sector: ${metadata?.locationName || (metadata?.latitude && metadata?.longitude ? `${metadata.latitude.toFixed(4)}, ${metadata.longitude.toFixed(4)}` : 'Active Field Zone')}
 Message: "${messageText}"`;
 
     const response = await ai.models.generateContent({
@@ -72,7 +74,7 @@ Message: "${messageText}"`;
             vulnerabilities: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
-              description: 'Identified risk factors such as trapped_on_roof, elderly, children, medical_need',
+              description: 'Identified risk factors such as trapped_on_roof, trapped_in_rubble, elderly, children, medical_need, flood_surge',
             },
             urgency: {
               type: Type.STRING,
@@ -80,7 +82,7 @@ Message: "${messageText}"`;
             },
             recommendedAction: {
               type: Type.STRING,
-              description: 'Specific tactical instruction for Incident Commander / Boat dispatch',
+              description: 'Specific tactical instruction for Incident Commander / Field unit dispatch',
             },
           },
           required: [

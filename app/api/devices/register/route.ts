@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       longitude: longitude ?? 86.5902,
       battery: battery ?? 100,
       status: status || 'ONLINE',
-      locationName: locationName || 'Supaul Sector',
+      locationName: locationName || 'Sector Alpha',
     });
 
     return NextResponse.json({ success: true, device }, { status: 201 });

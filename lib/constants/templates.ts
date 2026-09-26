@@ -7,33 +7,33 @@ export interface CannedTemplate {
 
 export const CANNED_TEMPLATES: CannedTemplate[] = [
   {
-    id: 'tpl-boat-eta',
-    label: 'Rescue Boat Dispatched (ETA 10-15m)',
+    id: 'tpl-unit-eta',
+    label: 'Rescue Unit Dispatched (ETA 10-15m)',
     category: 'RESCUE',
-    text: 'Rescue Boat Alpha has been dispatched to your coordinates. Estimated arrival in 10-15 minutes. Stay on the highest accessible point and wave bright cloth if visible.',
+    text: 'A tactical rescue unit has been dispatched to your GPS coordinates. Estimated arrival in 10-15 minutes. Stay in a safe, elevated position and display a visual signal if safe to do so.',
   },
   {
-    id: 'tpl-high-ground',
-    label: 'Move to High Ground / Embankment',
+    id: 'tpl-safe-zone',
+    label: 'Move to Designated Safe Zone / High Ground',
     category: 'RESCUE',
-    text: 'Flood surge approaching your sector. Immediately move all family members and essential medicines to the designated high ground embankment at Sector 2.',
+    text: 'Immediate hazard approaching your perimeter. Evacuate all personnel and family members along marked emergency corridors toward the nearest designated safe staging zone.',
   },
   {
     id: 'tpl-medical-dispatch',
-    label: 'Medical Team En Route',
+    label: 'Emergency Medical Squad En Route',
     category: 'MEDICAL',
-    text: 'Emergency Medical Team 1 with first-aid kits and anti-venom is en route to your location. Keep the patient warm, elevated, and calm.',
+    text: 'A rapid medical triage team with acute trauma supplies and emergency medication is en route to your location. Keep injured individuals stable, warm, and elevated.',
   },
   {
     id: 'tpl-supplies-staging',
-    label: 'Dry Food & Water Supply Point',
+    label: 'Relief Supplies & Potable Water Distribution',
     category: 'SUPPLIES',
-    text: 'Clean drinking water sachets and dry ration packets are being distributed at Supaul Primary School Relief Camp.',
+    text: 'Clean drinking water, emergency food rations, and satellite communication charging are operational at the Sector Relief & Staging Camp.',
   },
   {
-    id: 'tpl-fuel-dock',
-    label: 'Boat Refueling Point Designated',
+    id: 'tpl-asset-staging',
+    label: 'Responder Refuel & Battery Depot Designated',
     category: 'ADVISORY',
-    text: 'Proceed to Sandbar Depot Point Delta for rapid diesel top-up before continuing patrol sweep.',
+    text: 'Proceed to Sector Staging Depot Bravo for rapid fuel/battery exchange and field telemetry sync before continuing sector sweep.',
   },
 ];

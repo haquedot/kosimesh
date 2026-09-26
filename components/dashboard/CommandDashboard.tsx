@@ -17,6 +17,16 @@ import { SimulatorControlBar } from '../simulator/SimulatorControlBar';
 import { EmergencyAlertBanner } from '../common/EmergencyAlertBanner';
 import { playEmergencyChime } from '../common/EmergencyAudioChime';
 
+// Views
+import { FullMapView } from '../views/FullMapView';
+import { FullMessagesView } from '../views/FullMessagesView';
+import { FullDevicesView } from '../views/FullDevicesView';
+import { FullUsersView } from '../views/FullUsersView';
+
+// Modals & Popovers
+import { DeviceDetailModal } from '../devices/DeviceDetailModal';
+import { NotificationDrawer } from './NotificationDrawer';
+
 interface CommandDashboardProps {
   initialDevices: ConnectedDevice[];
   initialMessages: Message[];
@@ -35,16 +45,18 @@ export function CommandDashboard({
   const [metrics, setMetrics] = useState<SystemMetrics>(initialMetrics);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
 
-  // Modal States
+  // Modal & Drawer States
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<ConnectedDevice | null>(null);
   const [replyTarget, setReplyTarget] = useState<Message | null>(null);
   const [assignTarget, setAssignTarget] = useState<Message | null>(null);
   const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const prevMsgCountRef = useRef(messages.length);
 
   // Unread messages count for badges
-  const unreadCount = messages.filter((m) => m.status === 'UNREAD').length || 12;
+  const unreadCount = messages.filter((m) => m.status === 'UNREAD').length;
 
   // Unresolved P1 messages for emergency alert banner
   const unresolvedP1Messages = messages.filter(
@@ -69,7 +81,9 @@ export function CommandDashboard({
         if (data.messages) {
           // Play audio chime if new P1 arrives
           if (data.messages.length > prevMsgCountRef.current) {
-            const newP1 = data.messages.slice(0, data.messages.length - prevMsgCountRef.current).some((m: Message) => m.severity === 'P1');
+            const newP1 = data.messages
+              .slice(0, data.messages.length - prevMsgCountRef.current)
+              .some((m: Message) => m.severity === 'P1');
             if (newP1 && isAudioEnabled) {
               playEmergencyChime();
             }
@@ -191,7 +205,21 @@ export function CommandDashboard({
     }
   };
 
-  // Filter messages based on top search bar
+  // Trigger manual simulation patrol step
+  const handleTriggerSimulation = async () => {
+    try {
+      await fetch('/api/simulator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'STEP' }),
+      });
+      fetchData();
+    } catch (err) {
+      console.error('Simulation step failed', err);
+    }
+  };
+
+  // Filtered lists for top search bar
   const displayedMessages = searchQuery.trim()
     ? messages.filter(
         (m) =>
@@ -226,6 +254,8 @@ export function CommandDashboard({
           onSearchChange={setSearchQuery}
           unreadCount={unreadCount}
           onOpenBroadcast={() => setIsBroadcastOpen(true)}
+          onOpenNotifications={() => setIsNotificationOpen(true)}
+          onTriggerSimulation={handleTriggerSimulation}
         />
 
         {/* Emergency Alert Banner for Unresolved P1 calls */}
@@ -236,46 +266,107 @@ export function CommandDashboard({
           onSelectMessage={(msg) => setSelectedMessage(msg)}
         />
 
-        <main className="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
-          {/* Top KPI Cards Row matching UI.png */}
-          <KPICards metrics={metrics} />
+        {/* Dynamic View Rendering based on activeNav */}
+        {activeNav === 'dashboard' && (
+          <main className="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto animate-in fade-in duration-150">
+            {/* Top KPI Cards Row matching UI.png */}
+            <KPICards
+              metrics={metrics}
+              onClickTotalMessages={() => setActiveNav('messages')}
+              onClickCriticalP1={() => {
+                setSearchQuery('P1');
+                setActiveNav('messages');
+              }}
+              onClickActiveResponders={() => {
+                setActiveNav('users');
+              }}
+              onClickConnectedDevices={() => setActiveNav('devices')}
+            />
 
-          {/* Core Grid: Left 8 cols (Map + Devices Table) / Right 4 cols (Messages + Severity Chart) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left 8 Columns */}
-            <div className="lg:col-span-8 space-y-6 flex flex-col">
-              {/* Live GIS Satellite Flood Map */}
-              <LiveMeshMap
-                devices={displayedDevices}
-                messages={displayedMessages}
-                onSelectMessage={(msg) => setSelectedMessage(msg)}
-              />
+            {/* Core Grid: Left 8 cols (Map + Devices Table) / Right 4 cols (Messages + Severity Chart) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left 8 Columns */}
+              <div className="lg:col-span-8 space-y-6 flex flex-col">
+                {/* Live GIS Satellite Multi-Hazard Map */}
+                <LiveMeshMap
+                  devices={displayedDevices}
+                  messages={displayedMessages}
+                  onSelectMessage={(msg) => setSelectedMessage(msg)}
+                  onSelectDevice={(dev) => setSelectedDevice(dev)}
+                />
 
-              {/* Connected Devices Table */}
-              <ConnectedDevicesTable
-                devices={displayedDevices}
-                onSelectDevice={() => {}}
-                onViewAll={() => setActiveNav('devices')}
-              />
+                {/* Connected Devices Table */}
+                <ConnectedDevicesTable
+                  devices={displayedDevices}
+                  onSelectDevice={(dev) => setSelectedDevice(dev)}
+                  onViewAll={() => setActiveNav('devices')}
+                />
+              </div>
+
+              {/* Right 4 Columns */}
+              <div className="lg:col-span-4 space-y-6 flex flex-col">
+                {/* Recent Messages Card */}
+                <RecentMessagesCard
+                  messages={displayedMessages}
+                  onSelectMessage={(msg) => setSelectedMessage(msg)}
+                  onViewAll={() => setActiveNav('messages')}
+                />
+
+                {/* Severity Distribution Bar Chart */}
+                <SeverityDistributionChart
+                  metrics={metrics}
+                  onSelectSeverity={(sev) => {
+                    setSearchQuery(sev);
+                    setActiveNav('messages');
+                  }}
+                />
+              </div>
             </div>
+          </main>
+        )}
 
-            {/* Right 4 Columns */}
-            <div className="lg:col-span-4 space-y-6 flex flex-col">
-              {/* Recent Messages Card */}
-              <RecentMessagesCard
-                messages={displayedMessages}
-                onSelectMessage={(msg) => setSelectedMessage(msg)}
-                onViewAll={() => setActiveNav('messages')}
-              />
+        {/* View: Dedicated Full Map */}
+        {activeNav === 'map' && (
+          <FullMapView
+            devices={displayedDevices}
+            messages={displayedMessages}
+            onSelectMessage={(msg) => setSelectedMessage(msg)}
+            onSelectDevice={(dev) => setSelectedDevice(dev)}
+            onOpenBroadcast={() => setIsBroadcastOpen(true)}
+          />
+        )}
 
-              {/* Severity Distribution Bar Chart */}
-              <SeverityDistributionChart
-                metrics={metrics}
-                onSelectSeverity={(sev) => setSearchQuery(sev)}
-              />
-            </div>
-          </div>
-        </main>
+        {/* View: Dedicated Messages & Triage */}
+        {activeNav === 'messages' && (
+          <FullMessagesView
+            messages={displayedMessages}
+            onSelectMessage={(msg) => setSelectedMessage(msg)}
+            onUpdateStatus={handleUpdateStatus}
+            onReply={(msg) => setReplyTarget(msg)}
+            onAssignResponder={(msg) => setAssignTarget(msg)}
+            onOpenBroadcast={() => setIsBroadcastOpen(true)}
+          />
+        )}
+
+        {/* View: Dedicated Fleet & Devices */}
+        {activeNav === 'devices' && (
+          <FullDevicesView
+            devices={displayedDevices}
+            onSelectDevice={(dev) => setSelectedDevice(dev)}
+            onOpenBroadcast={() => setIsBroadcastOpen(true)}
+            onNavigateToMap={() => setActiveNav('map')}
+          />
+        )}
+
+        {/* View: Dedicated Users & Personnel Roster */}
+        {activeNav === 'users' && (
+          <FullUsersView
+            devices={displayedDevices}
+            messages={displayedMessages}
+            onSelectDevice={(dev) => setSelectedDevice(dev)}
+            onOpenBroadcast={() => setIsBroadcastOpen(true)}
+          />
+        )}
       </div>
 
       {/* 3. Modals & Drawers */}
@@ -285,6 +376,32 @@ export function CommandDashboard({
         onUpdateStatus={handleUpdateStatus}
         onReply={(msg) => setReplyTarget(msg)}
         onAssignResponder={(msg) => setAssignTarget(msg)}
+      />
+
+      <DeviceDetailModal
+        device={selectedDevice}
+        onClose={() => setSelectedDevice(null)}
+        onOpenMessage={() => setIsBroadcastOpen(true)}
+        onLocateOnMap={() => {
+          setActiveNav('map');
+          setSelectedDevice(null);
+        }}
+      />
+
+      <NotificationDrawer
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        messages={messages}
+        devices={devices}
+        onSelectMessage={(msg) => setSelectedMessage(msg)}
+        onSelectDevice={(dev) => setSelectedDevice(dev)}
+        onMarkAllRead={() => {
+          messages.forEach((m) => {
+            if (m.status === 'UNREAD') {
+              handleUpdateStatus(m.id, 'ACKNOWLEDGED');
+            }
+          });
+        }}
       />
 
       <ReplyModal
