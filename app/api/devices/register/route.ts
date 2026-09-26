@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
       userName: userName || deviceId,
       role: role || 'USER',
       deviceType: deviceType || 'PHONE',
-      latitude: latitude ?? 26.1201,
-      longitude: longitude ?? 86.5902,
-      battery: battery ?? 100,
+      latitude: typeof latitude === 'number' ? latitude : 0,
+      longitude: typeof longitude === 'number' ? longitude : 0,
+      battery: typeof battery === 'number' ? battery : 100,
       status: status || 'ONLINE',
-      locationName: locationName || 'Sector Alpha',
+      locationName: locationName || '',
     });
 
     return NextResponse.json({ success: true, device }, { status: 201 });

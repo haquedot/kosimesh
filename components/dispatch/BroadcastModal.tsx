@@ -13,7 +13,7 @@ interface BroadcastModalProps {
 export function BroadcastModal({ isOpen, onClose, onBroadcast }: BroadcastModalProps) {
   const [broadcastText, setBroadcastText] = useState('');
   const [severity, setSeverity] = useState<PriorityLevel>('P1');
-  const [locationName, setLocationName] = useState('All Operational Sectors');
+  const [locationName, setLocationName] = useState('');
   const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   if (!isOpen) return null;
