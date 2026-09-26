@@ -39,10 +39,7 @@ async function syncFromMongo() {
     const messagesCol = db.collection<Message>('messages');
 
     const devicesCount = await devicesCol.countDocuments();
-    if (devicesCount === 0) {
-      // Seed MongoDB
-      await devicesCol.insertMany(JSON.parse(JSON.stringify(initialDevices)));
-    } else {
+    if (devicesCount > 0) {
       const mongoDevices = await devicesCol.find({}).toArray();
       if (mongoDevices.length > 0) {
         store.devices = mongoDevices.map(({ _id, ...rest }) => rest as ConnectedDevice);
@@ -50,9 +47,7 @@ async function syncFromMongo() {
     }
 
     const messagesCount = await messagesCol.countDocuments();
-    if (messagesCount === 0) {
-      await messagesCol.insertMany(JSON.parse(JSON.stringify(initialMessages)));
-    } else {
+    if (messagesCount > 0) {
       const mongoMessages = await messagesCol.find({}).toArray();
       if (mongoMessages.length > 0) {
         store.messages = mongoMessages.map(({ _id, ...rest }) => rest as Message);
@@ -130,7 +125,7 @@ export const db = {
         longitude: deviceData.longitude ?? 86.5902,
         battery: deviceData.battery ?? 100,
         status: deviceData.status || 'ONLINE',
-        locationName: deviceData.locationName || 'Kosi River Sector',
+        locationName: deviceData.locationName || 'Sector Alpha',
         lastSeen: now,
         createdAt: now,
         updatedAt: now,
@@ -351,13 +346,13 @@ export const db = {
 
     return {
       totalMessages,
-      totalMessagesChangePct: 12,
+      totalMessagesChangePct: totalMessages > 0 ? 12 : 0,
       criticalP1Count,
-      criticalP1Change: 2,
+      criticalP1Change: criticalP1Count > 0 ? 1 : 0,
       activeResponders,
-      activeRespondersChange: 3,
-      connectedDevices: 37, // Matching UI.png displayed mesh nodes metric
-      connectedDevicesChange: 5,
+      activeRespondersChange: activeResponders > 0 ? 1 : 0,
+      connectedDevices,
+      connectedDevicesChange: connectedDevices > 0 ? 1 : 0,
       severityDistribution: { p1, p2, p3, p4 },
     };
   },

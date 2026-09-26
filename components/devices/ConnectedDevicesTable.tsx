@@ -56,21 +56,26 @@ export function ConnectedDevicesTable({ devices, onSelectDevice, onViewAll }: Co
         </button>
       </div>
 
-      {/* Responsive Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="text-slate-400 font-medium border-b border-stone-100 pb-2">
-              <th className="pb-2.5 font-medium">Device</th>
-              <th className="pb-2.5 font-medium">User</th>
-              <th className="pb-2.5 font-medium">Role</th>
-              <th className="pb-2.5 font-medium">Location</th>
-              <th className="pb-2.5 font-medium">Battery</th>
-              <th className="pb-2.5 font-medium">Status</th>
-              <th className="pb-2.5 font-medium text-right">Last Seen</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100">
+      {/* Responsive Table or Empty State */}
+      {displayedDevices.length === 0 ? (
+        <div className="py-10 text-center text-xs text-slate-400">
+          No mesh devices connected yet. Live nodes will populate here upon registration.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="text-slate-400 font-medium border-b border-stone-100 pb-2">
+                <th className="pb-2.5 font-medium">Device</th>
+                <th className="pb-2.5 font-medium">User</th>
+                <th className="pb-2.5 font-medium">Role</th>
+                <th className="pb-2.5 font-medium">Location</th>
+                <th className="pb-2.5 font-medium">Battery</th>
+                <th className="pb-2.5 font-medium">Status</th>
+                <th className="pb-2.5 font-medium text-right">Last Seen</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
             {displayedDevices.map((device) => {
               const isResponder = device.role === 'RESPONDER';
               const isOnline = device.status === 'ONLINE';
@@ -164,6 +169,7 @@ export function ConnectedDevicesTable({ devices, onSelectDevice, onViewAll }: Co
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

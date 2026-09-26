@@ -1,62 +1,71 @@
 import { db } from '@/lib/db/store';
 import { analyzeEmergencyMessage } from '@/lib/gemini/triage';
 
-// River waypoint coordinates along Kosi basin for boat patrols
-const BOAT_ALPHA_WAYPOINTS = [
-  { lat: 26.1305, lng: 86.6103, loc: 'Sector 2B' },
-  { lat: 26.1340, lng: 86.6140, loc: 'Sector 2B North' },
-  { lat: 26.1380, lng: 86.6180, loc: 'Kosi Main Channel' },
-  { lat: 26.1320, lng: 86.6120, loc: 'Sector 2B Central' },
-  { lat: 26.1280, lng: 86.6080, loc: 'Sector 2B South' },
+// Dynamic waypoints for tactical patrol simulation
+const PATROL_WAYPOINTS = [
+  { lat: 26.1305, lng: 86.6103, loc: 'Sector Alpha North' },
+  { lat: 26.1340, lng: 86.6140, loc: 'Sector Alpha Perimeter' },
+  { lat: 26.1380, lng: 86.6180, loc: 'Main River Transit Point' },
+  { lat: 26.1320, lng: 86.6120, loc: 'Sector Bravo Central' },
+  { lat: 26.1280, lng: 86.6080, loc: 'Sector Bravo South' },
+  { lat: 26.1220, lng: 86.6122, loc: 'Sector Charlie Staging' },
 ];
 
-const BOAT_BRAVO_WAYPOINTS = [
-  { lat: 26.1220, lng: 86.6122, loc: 'Sector 3A' },
-  { lat: 26.1260, lng: 86.6160, loc: 'Sector 3A Sandbar' },
-  { lat: 26.1290, lng: 86.6190, loc: 'Sector 3A East' },
-  { lat: 26.1240, lng: 86.6140, loc: 'Sector 3A Channel' },
-];
-
-let waypointIndexAlpha = 0;
-let waypointIndexBravo = 0;
+let waypointIndex = 0;
 
 export async function advanceSimulationTick() {
-  // Move Boat Alpha
-  waypointIndexAlpha = (waypointIndexAlpha + 1) % BOAT_ALPHA_WAYPOINTS.length;
-  const wpAlpha = BOAT_ALPHA_WAYPOINTS[waypointIndexAlpha];
-  const boatAlpha = db.getDeviceById('NODE-002');
-  if (boatAlpha) {
-    db.updateHeartbeat('NODE-002', {
-      latitude: wpAlpha.lat,
-      longitude: wpAlpha.lng,
-      battery: Math.max(15, boatAlpha.battery - 1),
+  const devices = db.getDevices({ role: 'RESPONDER' });
+  
+  // If no responder units exist, dynamically create patrol vessels
+  if (devices.length === 0) {
+    db.upsertDevice({
+      deviceId: 'NODE-002',
+      userName: 'Rescue Squad Alpha',
+      role: 'RESPONDER',
+      deviceType: 'BOAT_GPS',
+      latitude: 26.1305,
+      longitude: 86.6103,
+      battery: 85,
       status: 'ONLINE',
+      locationName: 'Sector Alpha North',
+    });
+    db.upsertDevice({
+      deviceId: 'NODE-004',
+      userName: 'Rescue Squad Bravo',
+      role: 'RESPONDER',
+      deviceType: 'BOAT_GPS',
+      latitude: 26.1220,
+      longitude: 86.6122,
+      battery: 70,
+      status: 'ONLINE',
+      locationName: 'Sector Charlie Staging',
     });
   }
 
-  // Move Boat Bravo
-  waypointIndexBravo = (waypointIndexBravo + 1) % BOAT_BRAVO_WAYPOINTS.length;
-  const wpBravo = BOAT_BRAVO_WAYPOINTS[waypointIndexBravo];
-  const boatBravo = db.getDeviceById('NODE-004');
-  if (boatBravo) {
-    db.updateHeartbeat('NODE-004', {
-      latitude: wpBravo.lat,
-      longitude: wpBravo.lng,
-      battery: Math.max(10, boatBravo.battery - 1),
+  waypointIndex = (waypointIndex + 1) % PATROL_WAYPOINTS.length;
+  const currentWp = PATROL_WAYPOINTS[waypointIndex];
+
+  const responders = db.getDevices({ role: 'RESPONDER' });
+  responders.forEach((resp, idx) => {
+    const wp = PATROL_WAYPOINTS[(waypointIndex + idx * 2) % PATROL_WAYPOINTS.length];
+    db.updateHeartbeat(resp.deviceId, {
+      latitude: wp.lat,
+      longitude: wp.lng,
+      battery: Math.max(15, resp.battery - 1),
       status: 'ONLINE',
     });
-  }
+  });
 
   return {
-    boatAlpha: { wp: wpAlpha, battery: boatAlpha?.battery },
-    boatBravo: { wp: wpBravo, battery: boatBravo?.battery },
+    activeResponders: responders.length,
+    currentWaypoint: currentWp,
   };
 }
 
 export async function triggerFlashFloodScenario() {
-  const messageText = 'Water has rapidly surged past 6 feet in Supaul Ward 7. Six family members including 2 infants are stranded on the tin shed roof with rising current.';
-  const senderName = 'Ravi Shankar';
-  const locationName = 'Supaul Ward 7';
+  const messageText = 'Rapid water surge exceeding 6 feet! Six individuals including 2 infants are stranded on the roof with fast current. Urgent extraction needed.';
+  const senderName = 'Alex Mercer';
+  const locationName = 'Sector Alpha East';
   const latitude = 26.1285;
   const longitude = 86.5940;
 
@@ -84,7 +93,7 @@ export async function triggerFlashFloodScenario() {
     status: 'UNREAD',
   });
 
-  // Also auto-register new device on map
+  // Auto-register citizen node on map
   db.upsertDevice({
     deviceId: newMsg.senderId,
     userName: senderName,
@@ -92,7 +101,7 @@ export async function triggerFlashFloodScenario() {
     deviceType: 'PHONE',
     latitude,
     longitude,
-    battery: 42,
+    battery: 62,
     status: 'SOS',
     locationName,
   });
@@ -101,21 +110,18 @@ export async function triggerFlashFloodScenario() {
 }
 
 export async function triggerLowFuelScenario() {
-  const boatBravo = db.getDeviceById('NODE-004');
-  if (boatBravo) {
-    db.updateHeartbeat('NODE-004', { battery: 14, status: 'WARNING' });
-  }
-
-  const messageText = 'Boat Bravo fuel critically low at 14%. Immediate refueling dock needed near Sandbar 2 or propulsion will stall within 20 mins.';
-  const senderName = 'Boat Bravo';
-  const locationName = 'Sector 3A Sandbar';
+  const messageText = 'Rescue Squad Bravo reports battery level critically low at 14%. Need battery swap / charging depot en route.';
+  const senderName = 'Rescue Squad Bravo';
+  const locationName = 'Sector Charlie';
+  const latitude = 26.1220;
+  const longitude = 86.6122;
 
   const analysis = await analyzeEmergencyMessage(messageText, {
     senderName,
     senderRole: 'RESPONDER',
     locationName,
-    latitude: 26.1220,
-    longitude: 86.6122,
+    latitude,
+    longitude,
   });
 
   const newMsg = db.createMessage({
@@ -124,13 +130,25 @@ export async function triggerLowFuelScenario() {
     senderRole: 'RESPONDER',
     message: messageText,
     messageType: 'RESOURCE_REQ',
-    latitude: 26.1220,
-    longitude: 86.6122,
+    latitude,
+    longitude,
     locationName,
     severity: analysis.severity,
     severityReason: analysis.reason,
     geminiAnalysis: analysis,
     status: 'UNREAD',
+  });
+
+  db.upsertDevice({
+    deviceId: 'NODE-004',
+    userName: senderName,
+    role: 'RESPONDER',
+    deviceType: 'BOAT_GPS',
+    latitude,
+    longitude,
+    battery: 14,
+    status: 'WARNING',
+    locationName,
   });
 
   return newMsg;

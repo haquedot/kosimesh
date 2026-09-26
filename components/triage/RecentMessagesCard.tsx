@@ -140,10 +140,15 @@ export function RecentMessagesCard({ messages, onSelectMessage, onViewAll }: Rec
         </button>
       </div>
 
-      {/* Message List Items matching UI.png */}
-      <div className="space-y-1 divide-y divide-stone-50">
-        {displayItems.map((item) => {
-          const isResponder = item.senderRole === 'RESPONDER';
+      {/* Message List Items matching UI.png or Empty State */}
+      {displayItems.length === 0 ? (
+        <div className="py-8 text-center text-xs text-slate-400">
+          No emergency messages in queue. Incoming transmissions will appear here.
+        </div>
+      ) : (
+        <div className="space-y-1 divide-y divide-stone-50">
+          {displayItems.map((item) => {
+            const isResponder = item.senderRole === 'RESPONDER';
 
           return (
             <div
@@ -196,6 +201,7 @@ export function RecentMessagesCard({ messages, onSelectMessage, onViewAll }: Rec
           );
         })}
       </div>
+      )}
     </div>
   );
 }
