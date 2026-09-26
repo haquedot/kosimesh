@@ -1,7 +1,12 @@
 # KosiMesh — Mobile App Quick Integration Guide
 
 **Base URL**: `https://kosimesh.vercel.app`  
-**Header**: `Content-Type: application/json`
+**Required Headers**:
+```http
+Content-Type: application/json
+x-mesh-api-key: km_live_mesh_secret_2026
+```
+*(Or `Authorization: Bearer km_live_mesh_secret_2026`)*
 
 ---
 
@@ -65,7 +70,7 @@
   "locationName": "Sector Alpha"
 }
 
-// Response (201)
+// Response (201) -> Returns instant AI Priority Assessment
 {
   "success": true,
   "message": {

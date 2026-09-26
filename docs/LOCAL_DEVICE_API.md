@@ -1,8 +1,8 @@
-# Kosi Mesh — REST API Reference for Local Devices & Mobile Clients
-
 > **Production Cloud URL**: `https://kosimesh.vercel.app`  
 > **Local Mesh Gateway URL**: `http://<gateway-ip>:3000`  
-> **Headers**: `Content-Type: application/json`  
+> **Required Headers**:
+> - `Content-Type: application/json`
+> - `x-mesh-api-key: km_live_mesh_secret_2026` *(or `Authorization: Bearer km_live_mesh_secret_2026`)*  
 > **Target Audience**: Mobile Application Developers (Citizen App & Responder App), Embedded GPS/Telemetry Firmware Engineers, Mesh Node Clients, Drone & IoT Gateway Integrators.
 
 ---
